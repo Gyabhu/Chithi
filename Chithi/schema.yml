@@ -1,0 +1,7 @@
+openapi: 3.0.3
+info:
+  title: Chithi API
+  version: 1.0.0
+  description: Hello Privacy, Hello Intimacy
+paths: {}
+components: {}
