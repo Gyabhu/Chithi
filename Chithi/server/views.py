@@ -1,19 +1,30 @@
 # Import necessary modules and classes
 from django.db.models import Count
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # Import the Server model and its serializer
-from .models import Server
+from .models import Category, Server
 from .schema import server_list_docs
-from .serializer import ServerSerializer
+from .serializer import CategorySerializer, ServerSerializer
 
+
+class CategoryListViewSet(viewsets.ViewSet):
+    queryset = Category.objects.all()
+
+    @extend_schema(responses=CategorySerializer)
+    def list(self, request):
+        serailzer = CategorySerializer(self.queryset, many=True)
+        return Response(serailzer.data)
 
 # Define a class for handling server list views
 class ServerListView(viewsets.ViewSet):
     # Set the initial queryset to include all Server objects
     queryset = Server.objects.all()
+    # permission_classes = [IsAuthenticated]
 
     # Define the 'list' method to handle GET requests
     @server_list_docs

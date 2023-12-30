@@ -31,7 +31,7 @@ server_list_docs = extend_schema(
             description="Include the number of members for each server in the response",
         ),
         OpenApiParameter(
-            name="by_server_id",
+            name="by_serverid",
             type=OpenApiTypes.INT,
             location=OpenApiParameter.QUERY,
             description="Include server by id",

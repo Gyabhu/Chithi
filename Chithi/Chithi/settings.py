@@ -45,14 +45,17 @@ INSTALLED_APPS = [
     # external
     "rest_framework",
     "drf_spectacular",
+    "corsheaders",
     # internal
     "account",
     "server",
+    "webchat",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -139,7 +142,10 @@ AUTH_USER_MODEL = "account.Account"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        #"rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -147,4 +153,14 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Hello Privacy, Hello Intimacy.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": True,
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
 }

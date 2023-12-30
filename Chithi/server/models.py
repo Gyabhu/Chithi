@@ -3,7 +3,7 @@ from django.db import models
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 
-from .validators import validate_icon_image_size
+from .validators import validate_icon_image_size, validate_image_file_extension
 
 
 def category_icon_upload_path(instance, filename):
@@ -28,7 +28,10 @@ class Category(models.Model):
             existing = get_object_or_404(Category, id=self.id)
             if existing.icon != self.icon:
                 existing.icon.delete(save=False)
+        self.name = self.name.lower()
         super(Category, self).save(*args, **kwargs)
+
+
 
     @receiver(models.signals.pre_delete, sender="server.Category")
     def category_delete_files(sender, instance, **kwargs):
@@ -49,6 +52,35 @@ class Server(models.Model):
     description = models.CharField(max_length=500, null=True)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
+    banner = models.ImageField(
+    upload_to=server_banner_upload_path,
+    null=True,
+    blank=True,
+    validators=[validate_icon_image_size, validate_image_file_extension],
+    )
+    icon = models.ImageField(
+        upload_to=server_icon_upload_path,
+        null=True,
+        blank=True,
+        validators=[validate_icon_image_size, validate_image_file_extension],
+    )
+    def save(self, *args, **kwargs):
+        if self.id:
+            existing = get_object_or_404(Server, id=self.id)
+            if existing.icon != self.icon:
+                existing.icon.delete(save=False)
+            if existing.banner != self.banner:
+                existing.banner.delete(save=False)
+        super(Server, self).save(*args, **kwargs)
+    
+    @receiver(models.signals.pre_delete, sender="server.Server")
+    def server_delete_files(sender, instance, **kwargs):
+        for field in instance._meta.fields:
+            if field.name == "icon" or field.name == "banner":
+                file = getattr(instance, field.name)
+                if file:
+                    file.delete(save=False)
+
     def __str__(self):
         return self.name
 
@@ -58,27 +90,7 @@ class Channel(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="channel_owner")
     topic = models.CharField(max_length=100)
     server = models.ForeignKey(Server, on_delete=models.CASCADE, related_name="channel_server")
-    banner = models.ImageField(upload_to=server_banner_upload_path, null=True, blank=True)
-    icon = models.ImageField(
-        upload_to=server_icon_upload_path, null=True, blank=True, validators=[validate_icon_image_size]
-    )
-
-    def save(self, *args, **kwargs):
-        if self.id:
-            existing = get_object_or_404(Category, id=self.id)
-            if existing.icon != self.icon:
-                existing.icon.delete(save=False)
-            if existing.banner != self.banner:
-                existing.banner.delete(save=False)
-        super(Category, self).save(*args, **kwargs)
-
-    @receiver(models.signals.pre_delete, sender="server.Server")
-    def category_delete_files(sender, instance, **kwargs):
-        for field in instance._meta.fields:
-            if field.name == "icon" or field.name == "banner":
-                file = getattr(instance, field.name)
-                if file:
-                    file.delete(save=False)
+    
 
     def __str__(self):
         return self.name
