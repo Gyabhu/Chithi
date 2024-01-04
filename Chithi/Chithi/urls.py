@@ -22,6 +22,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from webchat.consumer import WebChatConsumer
 from rest_framework.routers import DefaultRouter
 from webchat.views import ChatViewSet
+from account.views import AccountViewSet, JWTCookieTokenObtainView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -31,13 +32,14 @@ from rest_framework_simplejwt.views import (
 
 router = DefaultRouter()
 router.register("api/chats", ChatViewSet, basename="chats")
+router.register("api/account", AccountViewSet, basename="account")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("server.urls")),
     path("api/docs/schema", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/schema/ui", SpectacularSwaggerView.as_view()),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', JWTCookieTokenObtainView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ] + router.urls
 
